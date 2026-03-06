@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useRef, useState } from 'react'
 import { useUIStore } from '@store'
 import { CanvasEngine } from '@canvas/engine'
 import { ComponentsPanel } from '@panels/components-panel'
 import { PropertiesPanel } from '@panels/properties-panel'
 import { CodePanel } from '@panels/code-panel'
 import { PreviewPanel } from '@panels/preview-panel'
+import { ParticleEngine } from '@creative/particles'
+import { BloomOverlay, TrailOverlay, BackgroundTexture } from '@creative/effects'
 import './index.css'
 
 export default function App() {
@@ -14,6 +16,14 @@ export default function App() {
   const showPropertiesPanel = useUIStore((state) => state.showPropertiesPanel)
   const showPreviewPanel = useUIStore((state) => state.showPreviewPanel)
   const showCodePanel = useUIStore((state) => state.showCodePanel)
+  
+  const [bloomTrigger, setBloomTrigger] = useState(false)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
+
+  const handleCanvasDrop = () => {
+    setBloomTrigger(true)
+    setTimeout(() => setBloomTrigger(false), 300)
+  }
 
   if (zenMode) {
     return (
@@ -24,19 +34,30 @@ export default function App() {
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: '#111827',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
+        <BackgroundTexture type="noise" intensity={0.02} />
+        <ParticleEngine config={{ particleCount: 80 }} />
+        <TrailOverlay active={true} />
+        
         <div
           style={{
             flex: 1,
             display: 'flex',
             gap: '0px',
+            position: 'relative',
+            zIndex: 10,
           }}
         >
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1 }} ref={canvasContainerRef} onDrop={handleCanvasDrop}>
             <CanvasEngine />
           </div>
         </div>
+        
+        <BloomOverlay trigger={bloomTrigger} color="#3b82f6" intensity={0.8} />
+        
         <button
           onClick={toggleZenMode}
           style={{
@@ -80,7 +101,7 @@ export default function App() {
         }}
       >
         <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
-          🎨 TUI Builder — Phase 1
+          🎨 TUI Builder — Phase 2 (Visual FX)
         </div>
         <button
           onClick={toggleZenMode}
@@ -103,18 +124,34 @@ export default function App() {
           flex: 1,
           display: 'flex',
           gap: '0px',
+          position: 'relative',
         }}
       >
         {showComponentsPanel && <ComponentsPanel />}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <BackgroundTexture type="noise" intensity={0.015} />
+          <ParticleEngine config={{ particleCount: 60 }} />
+          <TrailOverlay active={true} />
+          
+          <div 
+            style={{ 
+              flex: 1, 
+              position: 'relative',
+              zIndex: 10,
+            }}
+            ref={canvasContainerRef}
+            onDrop={handleCanvasDrop}
+          >
             <CanvasEngine />
           </div>
+
           <div
             style={{
               height: '200px',
               display: 'flex',
               borderTop: '1px solid #374151',
+              position: 'relative',
+              zIndex: 10,
             }}
           >
             {showPreviewPanel && (
@@ -129,6 +166,8 @@ export default function App() {
         </div>
         {showPropertiesPanel && <PropertiesPanel />}
       </div>
+
+      <BloomOverlay trigger={bloomTrigger} color="#3b82f6" intensity={0.6} />
     </div>
   )
 }

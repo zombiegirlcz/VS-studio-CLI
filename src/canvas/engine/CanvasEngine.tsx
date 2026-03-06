@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useCanvasStore, useUIStore } from '@store'
 import NodeRenderer from './NodeRenderer'
 
@@ -10,6 +10,7 @@ const CanvasEngine: React.FC = () => {
   const moveNode = useCanvasStore((state) => state.moveNode)
   const deselectAll = useCanvasStore((state) => state.deselectAll)
   const zenMode = useUIStore((state) => state.zenMode)
+  const toggleZenMode = useUIStore((state) => state.toggleZenMode)
 
   const handleCanvasClick = useCallback(() => {
     deselectAll()
@@ -41,6 +42,23 @@ const CanvasEngine: React.FC = () => {
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
   }, [])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === 'z' && !zenMode) {
+        e.preventDefault()
+        toggleZenMode()
+      }
+      if (e.key === 'Escape' && zenMode) {
+        e.preventDefault()
+        toggleZenMode()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [zenMode, toggleZenMode])
 
   const containerStyle: React.CSSProperties = {
     position: 'relative',
