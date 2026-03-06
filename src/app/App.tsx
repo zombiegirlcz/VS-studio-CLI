@@ -19,7 +19,6 @@ import ParticlePhysicsPanel from '@panels/physics-panel/ParticlePhysicsPanel'
 import { useParticlePhysicsStore } from '@panels/physics-panel/ParticlePhysicsPanel'
 import GodModeOverlay from '@creative/effects/GodModeOverlay'
 import GodModePanel from '@panels/effects-panel/GodModePanel'
-import './index.css'
 
 export default function App() {
   const zenMode = useUIStore((state) => state.zenMode)
