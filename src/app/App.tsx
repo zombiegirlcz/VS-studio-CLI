@@ -7,6 +7,7 @@ import { CodePanel } from '@panels/code-panel'
 import { PreviewPanel } from '@panels/preview-panel'
 import { ParticleEngine } from '@creative/particles'
 import { BloomOverlay, TrailOverlay, BackgroundTexture } from '@creative/effects'
+import { playDropSound } from '@creative/audio'
 import './index.css'
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
   const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   const handleCanvasDrop = () => {
+    playDropSound()
     setBloomTrigger(true)
     setTimeout(() => setBloomTrigger(false), 300)
   }
@@ -101,7 +103,7 @@ export default function App() {
         }}
       >
         <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
-          🎨 TUI Builder — Phase 2 (Visual FX)
+          🎨 TUI Builder — Phase 3 (Presets + Sound)
         </div>
         <button
           onClick={toggleZenMode}

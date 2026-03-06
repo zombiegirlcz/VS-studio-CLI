@@ -1,5 +1,6 @@
 import React from 'react'
 import ComponentCard from './ComponentCard'
+import PresetsGallery from './PresetsGallery'
 
 const ComponentsPanel: React.FC = () => {
   const components = [
@@ -17,28 +18,33 @@ const ComponentsPanel: React.FC = () => {
         backgroundColor: '#111827',
         borderRight: '1px solid #374151',
         overflowY: 'auto',
-        padding: '12px',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px' }}>
-        Components
+      <div style={{ padding: '12px' }}>
+        <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '12px' }}>
+          Components
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr',
+            gap: '4px',
+          }}
+        >
+          {components.map((comp) => (
+            <ComponentCard
+              key={comp.type}
+              type={comp.type}
+              icon={comp.icon}
+              label={comp.label}
+            />
+          ))}
+        </div>
       </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gap: '4px',
-        }}
-      >
-        {components.map((comp) => (
-          <ComponentCard
-            key={comp.type}
-            type={comp.type}
-            icon={comp.icon}
-            label={comp.label}
-          />
-        ))}
-      </div>
+
+      <PresetsGallery />
     </div>
   )
 }
