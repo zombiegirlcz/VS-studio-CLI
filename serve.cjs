@@ -25,6 +25,15 @@ const getContentType = (filePath) => {
 }
 
 const server = http.createServer((req, res) => {
+  // Debug page
+  if (req.url === '/debug') {
+    fs.readFile(path.join(__dirname, 'index.debug.html'), (err, data) => {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+      res.end(data || '<h1>Debug page not found</h1>')
+    })
+    return
+  }
+
   let filePath = req.url === '/' ? 'index.html' : req.url
   filePath = path.join(distDir, filePath)
   
@@ -43,7 +52,10 @@ const server = http.createServer((req, res) => {
           res.writeHead(404, { 'Content-Type': 'text/html' })
           res.end('<h1>404 Not Found</h1>')
         } else {
-          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+          res.writeHead(200, { 
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          })
           res.end(data2)
         }
       })
@@ -60,5 +72,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(5173, '0.0.0.0', () => {
   console.log('Server listening on port 5173')
+  console.log('Main app: http://localhost:5173/')
+  console.log('Debug: http://localhost:5173/debug')
   console.log('Serving from:', distDir)
 })
