@@ -5,7 +5,7 @@ interface NodeRendererProps {
   node: TUINode
   isSelected: boolean
   onSelect: (nodeId: string, multiSelect?: boolean) => void
-  onMove?: (nodeId: string, x: number, y: number) => void
+  onMove?: (nodeId: string, position: { x: number; y: number }) => void
   onResize?: (nodeId: string, width: number, height: number) => void
 }
 
@@ -73,7 +73,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         const handleMouseMove = (moveEvent: MouseEvent) => {
           const deltaX = moveEvent.clientX - startX
           const deltaY = moveEvent.clientY - startY
-          onMove?.(node.id, startPosX + deltaX, startPosY + deltaY)
+          onMove?.(node.id, { x: startPosX + deltaX, y: startPosY + deltaY })
         }
 
         const handleMouseUp = () => {
