@@ -35,6 +35,8 @@ const server = http.createServer((req, res) => {
   }
 
   let filePath = req.url === '/' ? 'index.html' : req.url
+  // Strip query string for file lookup
+  filePath = filePath.split('?')[0]
   filePath = path.join(distDir, filePath)
   
   // Prevent directory traversal
@@ -52,11 +54,18 @@ const server = http.createServer((req, res) => {
           res.writeHead(404, { 'Content-Type': 'text/html' })
           res.end('<h1>404 Not Found</h1>')
         } else {
+          // Add cache busting for dev
+          let html = data2.toString()
+          const bust = Date.now()
+          html = html.replace(/(assets\/[^"']+)/g, `$1?t=${bust}`)
+          
           res.writeHead(200, { 
             'Content-Type': 'text/html; charset=utf-8',
-            'Cache-Control': 'no-cache, no-store, must-revalidate'
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           })
-          res.end(data2)
+          res.end(html)
         }
       })
     } else {
@@ -66,11 +75,24 @@ const server = http.createServer((req, res) => {
         ? 'no-cache, no-store, must-revalidate' 
         : 'public, max-age=3600'
       
-      res.writeHead(200, { 
+      let responseData = data
+      let headers = {
         'Content-Type': contentType,
         'Cache-Control': cacheControl
-      })
-      res.end(data)
+      }
+      
+      // Cache busting for index.html
+      if (isIndexHtml) {
+        let html = data.toString()
+        const bust = Date.now()
+        html = html.replace(/(assets\/[^"']+)/g, `$1?t=${bust}`)
+        responseData = html
+        headers['Pragma'] = 'no-cache'
+        headers['Expires'] = '0'
+      }
+      
+      res.writeHead(200, headers)
+      res.end(responseData)
     }
   })
 })
