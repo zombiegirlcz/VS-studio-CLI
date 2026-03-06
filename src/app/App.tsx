@@ -5,6 +5,7 @@ import { ComponentsPanel } from '@panels/components-panel'
 import { PropertiesPanel } from '@panels/properties-panel'
 import { CodePanel } from '@panels/code-panel'
 import { PreviewPanel } from '@panels/preview-panel'
+import { AIPanel } from '@panels/ai-panel'
 import { ParticleEngine } from '@creative/particles'
 import { BloomOverlay, TrailOverlay, BackgroundTexture } from '@creative/effects'
 import { playDropSound } from '@creative/audio'
@@ -166,7 +167,10 @@ export default function App() {
             </div>}
           </div>
         </div>
-        {showPropertiesPanel && <PropertiesPanel />}
+        <div style={{ display: 'flex' }}>
+          {showPropertiesPanel && <PropertiesPanel />}
+          <AIPanel />
+        </div>
       </div>
 
       <BloomOverlay trigger={bloomTrigger} color="#3b82f6" intensity={0.6} />
