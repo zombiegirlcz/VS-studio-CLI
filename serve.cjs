@@ -61,9 +61,14 @@ const server = http.createServer((req, res) => {
       })
     } else {
       const contentType = getContentType(filePath)
+      const isIndexHtml = path.basename(filePath) === 'index.html'
+      const cacheControl = isIndexHtml 
+        ? 'no-cache, no-store, must-revalidate' 
+        : 'public, max-age=3600'
+      
       res.writeHead(200, { 
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=3600'
+        'Cache-Control': cacheControl
       })
       res.end(data)
     }
