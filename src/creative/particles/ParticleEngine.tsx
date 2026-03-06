@@ -15,6 +15,9 @@ const ParticleEngine: React.FC<ParticleCanvasProps> = ({
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: 0, y: 0 })
   const animationRef = useRef<number>()
+  
+  // Call all hooks at top level
+  const godModeState = useGodModeStore()
 
   const fullConfig = { ...DEFAULT_CONFIG, ...config }
 
@@ -66,7 +69,7 @@ const ParticleEngine: React.FC<ParticleCanvasProps> = ({
 
       // Update particles
       const { isEnabled: godModeEnabled, attractorX, attractorY, power, isAttractor } =
-        useGodModeStore()
+        godModeState
 
       particles.forEach((p, idx) => {
         // Apply gravity
