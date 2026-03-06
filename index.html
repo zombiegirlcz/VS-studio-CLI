@@ -12,6 +12,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx?v=1772776147"></script>
-    <!-- Service Worker disabled for debug -->
+    
+    <!-- Service Worker for offline support & caching -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('[SW] Registered successfully', reg.scope);
+        }).catch(err => {
+          console.log('[SW] Registration failed:', err);
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,58 +1,55 @@
-const CACHE_NAME = 'tui-builder-v1'
-const urlsToCache = [
+// Simple Service Worker for offline fallback
+const CACHE_NAME = 'tui-builder-v1';
+const ASSETS_TO_CACHE = [
   '/',
-  '/index.html',
-  '/manifest.json',
-]
+  '/assets/index-CA1emiRN.css',
+  '/assets/index-CdNGau4_.js',
+  '/manifest.json'
+];
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache).catch(() => {
-        // Some URLs might not exist
-        return Promise.resolve()
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS_TO_CACHE).catch(() => {
+        console.log('Cache addAll failed - proceeding anyway');
+      });
     })
-  )
-  self.skipWaiting()
-})
+  );
+});
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames
-          .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => caches.delete(cacheName))
-      )
-    })
-  )
-  self.clients.claim()
-})
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      if (response) {
-        return response
-      }
-
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type === 'error') {
-            return response
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
           }
-
-          const responseToCache = response.clone()
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache)
-          })
-
-          return response
         })
-        .catch(() => {
-          return caches.match('/')
-        })
+      );
     })
-  )
-})
+  );
+});
+
+self.addEventListener('fetch', event => {
+  // Network first, with cache fallback
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Clone the response
+        const responseClone = response.clone();
+        
+        // Cache successful responses
+        if (response.status === 200) {
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Return from cache if network fails
+        return caches.match(event.request);
+      })
+  );
+});

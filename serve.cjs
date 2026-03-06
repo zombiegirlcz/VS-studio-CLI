@@ -43,6 +43,23 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  // Service Worker
+  if (req.url === '/sw.js') {
+    fs.readFile(path.join(__dirname, 'public/sw.js'), (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' })
+        res.end('SW not found')
+        return
+      }
+      res.writeHead(200, { 
+        'Content-Type': 'application/javascript; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      })
+      res.end(data)
+    })
+    return
+  }
+
   let filePath = req.url === '/' ? 'index.html' : req.url
   // Strip query string for file lookup
   filePath = filePath.split('?')[0]
