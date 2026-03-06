@@ -28,7 +28,8 @@ export default function App() {
   const showPreviewPanel = useUIStore((state) => state.showPreviewPanel)
   const showCodePanel = useUIStore((state) => state.showCodePanel)
   
-  const { useMagnetism, magneticForce } = useParticlePhysicsStore()
+  const useMagnetism = useParticlePhysicsStore((state) => state.useMagnetism)
+  const magneticForce = useParticlePhysicsStore((state) => state.magneticForce)
   
   const [bloomTrigger, setBloomTrigger] = useState(false)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
