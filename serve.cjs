@@ -34,6 +34,15 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  // Super debug page
+  if (req.url === '/super-debug') {
+    fs.readFile(path.join(__dirname, 'index.super-debug.html'), (err, data) => {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+      res.end(data || '<h1>Super debug page not found</h1>')
+    })
+    return
+  }
+
   let filePath = req.url === '/' ? 'index.html' : req.url
   // Strip query string for file lookup
   filePath = filePath.split('?')[0]
