@@ -43,6 +43,15 @@ const server = http.createServer((req, res) => {
     return
   }
 
+  // Diagnostic page
+  if (req.url === '/diagnostic') {
+    fs.readFile(path.join(__dirname, 'diagnostic.html'), (err, data) => {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
+      res.end(data || '<h1>Diagnostic page not found</h1>')
+    })
+    return
+  }
+
   // Service Worker
   if (req.url === '/sw.js') {
     fs.readFile(path.join(__dirname, 'public/sw.js'), (err, data) => {

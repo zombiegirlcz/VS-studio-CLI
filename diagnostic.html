@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUI Builder - Diagnostics</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #111827;
+            color: #e5e7eb;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { color: #3b82f6; margin-bottom: 20px; }
+        h2 { color: #10b981; margin-top: 30px; margin-bottom: 10px; }
+        .section { 
+            background: #1f2937; 
+            border-left: 4px solid #3b82f6; 
+            padding: 15px; 
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .status.ok { background: #10b981; color: black; }
+        .status.warn { background: #f59e0b; color: black; }
+        .status.error { background: #ef4444; color: white; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-family: inherit;
+        }
+        button:hover { background: #2563eb; }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+        pre {
+            background: #111827;
+            border: 1px solid #374151;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .log {
+            background: #000;
+            color: #10b981;
+            border: 1px solid #374151;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .log-line { margin: 4px 0; }
+        .error-line { color: #ef4444; }
+        .success-line { color: #10b981; }
+        .info-line { color: #3b82f6; }
+        input {
+            background: #374151;
+            color: #e5e7eb;
+            border: 1px solid #4b5563;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: inherit;
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 TUI Builder Diagnostics</h1>
+        
+        <div class="section">
+            <h2>🚨 Buttons Not Working?</h2>
+            <p>If buttons appear but don't respond, try these fixes in order:</p>
+            <div style="margin-top: 15px;">
+                <button class="danger" onclick="hardRefresh()">🔄 HARD REFRESH (Ctrl+Shift+R)</button>
+                <button class="danger" onclick="clearAllCache()">🗑️  CLEAR ALL CACHE</button>
+                <button class="danger" onclick="clearServiceWorker()">🚫 DISABLE SERVICE WORKER</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 System Status</h2>
+            <div id="status"></div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Button Test</h2>
+            <p>Click a button and check if state updates:</p>
+            <button onclick="testButtonClick()">TEST: "Start Drawing"</button>
+            <button onclick="testZenMode()">TEST: Zen Mode</button>
+            <div class="log" id="testLog"></div>
+        </div>
+
+        <div class="section">
+            <h2>📱 Device Info</h2>
+            <div id="deviceInfo"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔍 Network Check</h2>
+            <button onclick="checkNetwork()">CHECK ASSETS</button>
+            <div class="log" id="networkLog"></div>
+        </div>
+
+        <div class="section">
+            <h2>💾 Storage Info</h2>
+            <div id="storageInfo"></div>
+            <button onclick="showStorage()">SHOW STORAGE</button>
+            <div class="log" id="storageLog"></div>
+        </div>
+
+        <div class="section">
+            <h2>🗝️  API Configuration Test</h2>
+            <input type="text" id="geminiKey" placeholder="Enter Gemini API Key (optional)" />
+            <button onclick="saveGeminiKey()">Save Gemini Key</button>
+            <input type="text" id="openaiKey" placeholder="Enter OpenAI API Key (optional)" />
+            <button onclick="saveOpenaiKey()">Save OpenAI Key</button>
+            <button onclick="testAPIs()">TEST APIs</button>
+            <div class="log" id="apiLog"></div>
+        </div>
+
+        <div class="section">
+            <h2>🎨 Canvas Test</h2>
+            <button onclick="testCanvasDraw()">DRAW TEST PATTERN</button>
+            <canvas id="testCanvas" width="300" height="200" style="border: 1px solid #374151; background: #000; display: block; margin: 10px 0;"></canvas>
+        </div>
+
+        <div class="section">
+            <h2>📋 Detailed Logs</h2>
+            <button onclick="captureDetailedLog()">CAPTURE LOGS</button>
+            <div class="log" id="detailedLog"></div>
+        </div>
+    </div>
+
+    <script>
+        const log = (id, msg, type = 'info') => {
+            const logEl = document.getElementById(id);
+            if (!logEl) return;
+            const line = document.createElement('div');
+            line.className = 'log-line ' + type + '-line';
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+
+        const hardRefresh = () => {
+            if (confirm('This will hard refresh the page. Continue?')) {
+                location.reload(true);
+            }
+        };
+
+        const clearAllCache = async () => {
+            if (!confirm('This will clear all cache. Continue?')) return;
+            
+            log('testLog', '🗑️ Clearing cache...', 'info');
+            
+            // Clear LocalStorage
+            try {
+                localStorage.clear();
+                log('testLog', '✅ LocalStorage cleared', 'success');
+            } catch (e) {
+                log('testLog', '❌ LocalStorage error: ' + e.message, 'error');
+            }
+
+            // Clear SessionStorage
+            try {
+                sessionStorage.clear();
+                log('testLog', '✅ SessionStorage cleared', 'success');
+            } catch (e) {
+                log('testLog', '❌ SessionStorage error: ' + e.message, 'error');
+            }
+
+            // Clear IndexedDB
+            try {
+                const dbs = await window.indexedDB.databases?.() || [];
+                for (const db of dbs) {
+                    window.indexedDB.deleteDatabase(db.name);
+                }
+                log('testLog', `✅ Cleared ${dbs.length} IndexedDB databases`, 'success');
+            } catch (e) {
+                log('testLog', '❌ IndexedDB error: ' + e.message, 'error');
+            }
+
+            // Clear Cookies
+            try {
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                log('testLog', '✅ Cookies cleared', 'success');
+            } catch (e) {
+                log('testLog', '❌ Cookie error: ' + e.message, 'error');
+            }
+
+            log('testLog', '⚠️  Reloading page...', 'info');
+            setTimeout(() => location.reload(), 1000);
+        };
+
+        const clearServiceWorker = async () => {
+            if (!confirm('This will disable Service Worker. Continue?')) return;
+            
+            log('testLog', '🚫 Unregistering Service Workers...', 'info');
+            
+            try {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const reg of registrations) {
+                    await reg.unregister();
+                    log('testLog', `✅ Unregistered: ${reg.scope}`, 'success');
+                }
+                log('testLog', 'ℹ️ Reloading page...', 'info');
+                setTimeout(() => location.reload(), 500);
+            } catch (e) {
+                log('testLog', '❌ Error: ' + e.message, 'error');
+            }
+        };
+
+        const testButtonClick = async () => {
+            log('testLog', '🧪 Testing "Start Drawing" button...', 'info');
+            
+            // Navigate to main app in iframe and test
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'http://localhost:5173/';
+            document.body.appendChild(iframe);
+
+            iframe.onload = async () => {
+                try {
+                    const buttons = iframe.contentDocument.querySelectorAll('button');
+                    const drawingBtn = Array.from(buttons).find(b => b.textContent.includes('Start Drawing'));
+                    
+                    if (!drawingBtn) {
+                        log('testLog', '❌ "Start Drawing" button not found', 'error');
+                        return;
+                    }
+
+                    log('testLog', '✅ Button found: ' + drawingBtn.textContent.trim(), 'success');
+                    
+                    // Click it
+                    drawingBtn.click();
+                    log('testLog', '✅ Button clicked', 'success');
+
+                    // Check state after click
+                    setTimeout(() => {
+                        const newText = drawingBtn.textContent;
+                        if (newText.includes('Drawing Mode ON')) {
+                            log('testLog', '✅ STATE CHANGED: ' + newText.trim(), 'success');
+                        } else {
+                            log('testLog', '⚠️ Button text still: ' + newText.trim(), 'warn');
+                        }
+                    }, 500);
+
+                    document.body.removeChild(iframe);
+                } catch (e) {
+                    log('testLog', '❌ Error: ' + e.message, 'error');
+                    document.body.removeChild(iframe);
+                }
+            };
+        };
+
+        const testZenMode = () => {
+            log('testLog', '🧪 Testing Zen Mode...', 'info');
+            log('testLog', 'Press Z key or click the "Zen Mode" button in the app', 'info');
+        };
+
+        const checkNetwork = async () => {
+            log('networkLog', '🔍 Checking assets...', 'info');
+            
+            const assets = [
+                '/index.html',
+                '/sw.js',
+                '/manifest.json'
+            ];
+
+            for (const asset of assets) {
+                try {
+                    const res = await fetch(asset);
+                    const status = res.ok ? '✅' : '❌';
+                    log('networkLog', `${status} ${asset} (${res.status})`, res.ok ? 'success' : 'error');
+                } catch (e) {
+                    log('networkLog', `❌ ${asset} - ${e.message}`, 'error');
+                }
+            }
+        };
+
+        const showStorage = () => {
+            const storage = document.getElementById('storageLog');
+            storage.innerHTML = '';
+
+            // LocalStorage
+            log('storageLog', '📦 LocalStorage:', 'info');
+            for (const [key, value] of Object.entries(localStorage)) {
+                if (!key.startsWith('lifespan')) {  // Skip internal keys
+                    log('storageLog', `  ${key}: ${value.substring(0, 50)}...`, 'info');
+                }
+            }
+
+            // SessionStorage
+            log('storageLog', '📦 SessionStorage:', 'info');
+            for (const [key, value] of Object.entries(sessionStorage)) {
+                log('storageLog', `  ${key}: ${value.substring(0, 50)}...`, 'info');
+            }
+        };
+
+        const saveGeminiKey = () => {
+            const key = document.getElementById('geminiKey').value;
+            if (!key) {
+                log('apiLog', '⚠️ No key entered', 'warn');
+                return;
+            }
+            localStorage.setItem('gemini_key', key);
+            log('apiLog', '✅ Gemini key saved', 'success');
+        };
+
+        const saveOpenaiKey = () => {
+            const key = document.getElementById('openaiKey').value;
+            if (!key) {
+                log('apiLog', '⚠️ No key entered', 'warn');
+                return;
+            }
+            localStorage.setItem('openai_key', key);
+            log('apiLog', '✅ OpenAI key saved', 'success');
+        };
+
+        const testAPIs = () => {
+            log('apiLog', '🔗 Testing APIs...', 'info');
+            
+            const geminiKey = localStorage.getItem('gemini_key');
+            const openaiKey = localStorage.getItem('openai_key');
+
+            if (!geminiKey) {
+                log('apiLog', '⚠️ Gemini key not set', 'warn');
+            } else {
+                log('apiLog', '✅ Gemini key configured', 'success');
+            }
+
+            if (!openaiKey) {
+                log('apiLog', '⚠️ OpenAI key not set', 'warn');
+            } else {
+                log('apiLog', '✅ OpenAI key configured', 'success');
+            }
+        };
+
+        const testCanvasDraw = () => {
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+            ctx.fillStyle = '#10b981';
+            ctx.fillText('Canvas Test - Lines Below', 20, 40);
+
+            ctx.strokeStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.moveTo(50, 80);
+            ctx.lineTo(250, 80);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(150, 120, 30, 0, Math.PI * 2);
+            ctx.stroke();
+
+            log('testLog', '✅ Canvas drawing test complete', 'success');
+        };
+
+        const captureDetailedLog = () => {
+            const log_container = document.getElementById('detailedLog');
+            log_container.innerHTML = '';
+
+            // Browser info
+            log('detailedLog', '🌐 Browser: ' + navigator.userAgent, 'info');
+            log('detailedLog', '📍 URL: ' + window.location.href, 'info');
+            log('detailedLog', '⏰ Time: ' + new Date().toISOString(), 'info');
+
+            // Memory
+            if (navigator.deviceMemory) {
+                log('detailedLog', '💾 Device Memory: ' + navigator.deviceMemory + 'GB', 'info');
+            }
+
+            // Connection
+            if (navigator.connection) {
+                log('detailedLog', '🔌 Connection: ' + navigator.connection.effectiveType, 'info');
+            }
+
+            // Service Worker
+            if (navigator.serviceWorker) {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    log('detailedLog', `🔄 Service Workers: ${regs.length} registered`, regs.length > 0 ? 'success' : 'warn');
+                    regs.forEach(reg => {
+                        log('detailedLog', `  Scope: ${reg.scope}`, 'info');
+                    });
+                });
+            }
+        };
+
+        // Initial status check
+        const updateStatus = () => {
+            const status = document.getElementById('status');
+            status.innerHTML = '';
+
+            const checks = [
+                { name: 'JavaScript', ok: true },
+                { name: 'LocalStorage', ok: typeof(Storage) !== 'undefined' },
+                { name: 'Service Workers', ok: 'serviceWorker' in navigator },
+                { name: 'IndexedDB', ok: !!window.indexedDB },
+                { name: 'Canvas', ok: document.createElement('canvas').getContext('2d') !== null },
+            ];
+
+            checks.forEach(check => {
+                const span = document.createElement('span');
+                span.className = 'status ' + (check.ok ? 'ok' : 'error');
+                span.textContent = (check.ok ? '✅' : '❌') + ' ' + check.name;
+                status.appendChild(span);
+            });
+        };
+
+        const updateDeviceInfo = () => {
+            const info = document.getElementById('deviceInfo');
+            info.innerHTML = `
+                <strong>Screen Size:</strong> ${window.innerWidth} x ${window.innerHeight}px<br>
+                <strong>Device Pixel Ratio:</strong> ${window.devicePixelRatio}<br>
+                <strong>Platform:</strong> ${navigator.platform}<br>
+                <strong>User Agent:</strong> ${navigator.userAgent.substring(0, 100)}...
+            `;
+        };
+
+        const updateStorageInfo = () => {
+            const info = document.getElementById('storageInfo');
+            let localStorageSize = 0;
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    localStorageSize += localStorage[key].length + key.length;
+                }
+            }
+            info.innerHTML = `
+                <strong>LocalStorage:</strong> ${(localStorageSize / 1024).toFixed(2)} KB<br>
+                <strong>Items:</strong> ${localStorage.length}<br>
+                <strong>SessionStorage Items:</strong> ${sessionStorage.length}
+            `;
+        };
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            updateStatus();
+            updateDeviceInfo();
+            updateStorageInfo();
+            log('detailedLog', '✅ Diagnostics page loaded', 'success');
+        });
+    </script>
+</body>
+</html>
