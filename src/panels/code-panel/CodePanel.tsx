@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useCanvasStore } from '@store'
 import { generateInkCode } from '@codegen'
+import QRExport from './QRExport'
 
 const CodePanel: React.FC = () => {
   const nodes = useCanvasStore((state) => state.nodes)
@@ -32,6 +33,7 @@ const CodePanel: React.FC = () => {
         borderLeft: '1px solid #374151',
         display: 'flex',
         flexDirection: 'column',
+        overflowY: 'auto',
       }}
     >
       <div
@@ -40,11 +42,16 @@ const CodePanel: React.FC = () => {
           borderBottom: '1px solid #374151',
           display: 'flex',
           gap: '8px',
+          position: 'sticky',
+          top: 0,
+          backgroundColor: '#111827',
+          zIndex: 10,
         }}
       >
         <button
           onClick={handleCopy}
           style={{
+            flex: 1,
             padding: '6px 12px',
             backgroundColor: '#1f2937',
             border: '1px solid #374151',
@@ -59,6 +66,7 @@ const CodePanel: React.FC = () => {
         <button
           onClick={handleDownload}
           style={{
+            flex: 1,
             padding: '6px 12px',
             backgroundColor: '#1f2937',
             border: '1px solid #374151',
@@ -72,21 +80,25 @@ const CodePanel: React.FC = () => {
         </button>
       </div>
 
-      <pre
-        style={{
-          flex: 1,
-          overflow: 'auto',
-          padding: '12px',
-          color: '#9ca3af',
-          fontSize: '11px',
-          margin: 0,
-          fontFamily: 'monospace',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-        }}
-      >
-        {code}
-      </pre>
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <pre
+          style={{
+            padding: '12px',
+            color: '#9ca3af',
+            fontSize: '11px',
+            margin: 0,
+            fontFamily: 'monospace',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+          }}
+        >
+          {code}
+        </pre>
+      </div>
+
+      <div style={{ borderTop: '1px solid #374151', backgroundColor: '#1f2937' }}>
+        <QRExport />
+      </div>
     </div>
   )
 }
