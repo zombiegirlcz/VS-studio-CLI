@@ -18,7 +18,8 @@ export default defineConfig({
       '@utils': path.resolve(__dirname, './src/utils'),
       '@presets': path.resolve(__dirname, './src/presets'),
       '@creative': path.resolve(__dirname, './src/creative'),
-      '@components': path.resolve(__dirname, './src/components')
+      '@components': path.resolve(__dirname, './src/components'),
+      '@hooks': path.resolve(__dirname, './src/hooks')
     }
   },
   server: {

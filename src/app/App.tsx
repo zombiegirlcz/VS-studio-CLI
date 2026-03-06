@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { useUIStore } from '@store'
+import { useSwipe } from '@hooks/useSwipe'
 import { TabBar, type TabId } from '@components/TabBar'
 import { CanvasEngine } from '@canvas/engine'
 import { ComponentsPanel } from '@panels/components-panel'
@@ -108,6 +109,24 @@ export default function App() {
 
   // MOBILE LAYOUT
   if (isMobile) {
+    const tabs: TabId[] = ['canvas', 'components', 'properties', 'code', 'ai', 'tools', 'export']
+    const currentTabIndex = tabs.indexOf(activeTab)
+
+    useSwipe(
+      () => {
+        // Swipe left = next tab
+        if (currentTabIndex < tabs.length - 1) {
+          setActiveTab(tabs[currentTabIndex + 1])
+        }
+      },
+      () => {
+        // Swipe right = previous tab
+        if (currentTabIndex > 0) {
+          setActiveTab(tabs[currentTabIndex - 1])
+        }
+      }
+    )
+
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#111827', position: 'relative', overflow: 'hidden' }}>
         <DynamicBackground />
