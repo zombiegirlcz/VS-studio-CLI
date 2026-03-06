@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Particle, ParticleEngineConfig, DEFAULT_CONFIG } from './ParticleConfig'
+import { useGodModeStore } from '../effects/GodModeOverlay'
 
 interface ParticleCanvasProps {
   config?: Partial<ParticleEngineConfig>
@@ -39,6 +40,7 @@ const ParticleEngine: React.FC<ParticleCanvasProps> = ({
         size: Math.random() * 2 + 1,
         opacity: Math.random() * 0.5 + 0.3,
         hue: Math.random() * 360,
+        polarity: Math.random() > 0.5 ? 1 : -1,
       })
     }
     particlesRef.current = particles
@@ -63,13 +65,51 @@ const ParticleEngine: React.FC<ParticleCanvasProps> = ({
       const particles = particlesRef.current
 
       // Update particles
-      particles.forEach((p) => {
+      const { isEnabled: godModeEnabled, attractorX, attractorY, power, isAttractor } =
+        useGodModeStore()
+
+      particles.forEach((p, idx) => {
         // Apply gravity
         p.vy += fullConfig.gravity
 
         // Apply friction
         p.vx *= fullConfig.friction
         p.vy *= fullConfig.friction
+
+        // Apply God Mode (attractor/repulsor)
+        if (godModeEnabled) {
+          const dx = attractorX - p.x
+          const dy = attractorY - p.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
+
+          if (dist > 1) {
+            const force = (1 / (dist + 1)) * power * (isAttractor ? 1 : -1)
+            const angle = Math.atan2(dy, dx)
+
+            p.vx += Math.cos(angle) * force * 0.3
+            p.vy += Math.sin(angle) * force * 0.3
+          }
+        }
+
+        // Apply magnetic force between particles
+        if (fullConfig.useMagnetism && fullConfig.magneticForce) {
+          particles.forEach((p2, idx2) => {
+            if (idx === idx2) return
+            const dx = p2.x - p.x
+            const dy = p2.y - p.y
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            
+            if (dist > 5 && dist < fullConfig.connectionDistance) {
+              // Same polarity = repulsion, opposite = attraction
+              const isSame = p.polarity === p2.polarity
+              const force = isSame ? -fullConfig.magneticForce : fullConfig.magneticForce
+              const angle = Math.atan2(dy, dx)
+              
+              p.vx += Math.cos(angle) * force * 0.1
+              p.vy += Math.sin(angle) * force * 0.1
+            }
+          })
+        }
 
         // Mouse repulsion
         if (interactive) {

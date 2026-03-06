@@ -6,9 +6,19 @@ import { PropertiesPanel } from '@panels/properties-panel'
 import { CodePanel } from '@panels/code-panel'
 import { PreviewPanel } from '@panels/preview-panel'
 import { AIPanel } from '@panels/ai-panel'
+import BackgroundPanel from '@panels/settings-panel/BackgroundPanel'
+import DrawingPanel from '@panels/tools-panel/DrawingPanel'
 import { ParticleEngine } from '@creative/particles'
 import { BloomOverlay, TrailOverlay, BackgroundTexture } from '@creative/effects'
+import DynamicBackground from '@creative/effects/DynamicBackground'
+import DrawingCanvas from '@creative/drawing/DrawingCanvas'
 import { playDropSound } from '@creative/audio'
+import GIFExport from '@panels/export-panel/GIFExport'
+import AudioVisualizer from '@creative/audio/AudioVisualizer'
+import ParticlePhysicsPanel from '@panels/physics-panel/ParticlePhysicsPanel'
+import { useParticlePhysicsStore } from '@panels/physics-panel/ParticlePhysicsPanel'
+import GodModeOverlay from '@creative/effects/GodModeOverlay'
+import GodModePanel from '@panels/effects-panel/GodModePanel'
 import './index.css'
 
 export default function App() {
@@ -18,6 +28,8 @@ export default function App() {
   const showPropertiesPanel = useUIStore((state) => state.showPropertiesPanel)
   const showPreviewPanel = useUIStore((state) => state.showPreviewPanel)
   const showCodePanel = useUIStore((state) => state.showCodePanel)
+  
+  const { useMagnetism, magneticForce } = useParticlePhysicsStore()
   
   const [bloomTrigger, setBloomTrigger] = useState(false)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
@@ -42,7 +54,7 @@ export default function App() {
         }}
       >
         <BackgroundTexture type="noise" intensity={0.02} />
-        <ParticleEngine config={{ particleCount: 80 }} />
+        <ParticleEngine config={{ particleCount: 80, useMagnetism, magneticForce }} />
         <TrailOverlay active={true} />
         
         <div
@@ -91,8 +103,10 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         backgroundColor: '#111827',
+        position: 'relative',
       }}
     >
+      <DynamicBackground />
       <div
         style={{
           padding: '8px 12px',
@@ -133,8 +147,10 @@ export default function App() {
         {showComponentsPanel && <ComponentsPanel />}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' }}>
           <BackgroundTexture type="noise" intensity={0.015} />
-          <ParticleEngine config={{ particleCount: 60 }} />
+          <ParticleEngine config={{ particleCount: 60, useMagnetism, magneticForce }} />
           <TrailOverlay active={true} />
+          <DrawingCanvas containerRef={canvasContainerRef} />
+          <GodModeOverlay />
           
           <div 
             style={{ 
@@ -170,6 +186,24 @@ export default function App() {
         <div style={{ display: 'flex' }}>
           {showPropertiesPanel && <PropertiesPanel />}
           <AIPanel />
+          <div style={{ width: '280px', borderLeft: '1px solid #374151', overflow: 'auto' }}>
+            <DrawingPanel />
+            <div style={{ borderTop: '1px solid #374151' }}>
+              <GodModePanel />
+            </div>
+            <div style={{ borderTop: '1px solid #374151' }}>
+              <ParticlePhysicsPanel />
+            </div>
+            <div style={{ borderTop: '1px solid #374151' }}>
+              <AudioVisualizer />
+            </div>
+            <div style={{ borderTop: '1px solid #374151' }}>
+              <GIFExport />
+            </div>
+            <div style={{ borderTop: '1px solid #374151' }}>
+              <BackgroundPanel />
+            </div>
+          </div>
         </div>
       </div>
 

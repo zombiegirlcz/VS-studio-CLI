@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { useAIStore } from '@store'
 import { useCanvasStore } from '@store'
 import { GeminiAdapter, GPTAdapter } from '@ai/adapters'
+import PromptTemplatesPanel from './PromptTemplatesPanel'
+import APIConfigPanel from './APIConfigPanel'
 
 const AIPanel: React.FC = () => {
   const messages = useAIStore((state) => state.messages)
@@ -112,8 +114,14 @@ const AIPanel: React.FC = () => {
         }}
       >
         {messages.length === 0 && (
-          <div style={{ color: '#6b7280', fontSize: '12px', textAlign: 'center', marginTop: '20px' }}>
-            Describe your TUI design...
+          <div>
+            <div style={{ color: '#6b7280', fontSize: '12px', textAlign: 'center', marginTop: '10px' }}>
+              Describe your TUI design...
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <PromptTemplatesPanel />
+              <APIConfigPanel />
+            </div>
           </div>
         )}
         {messages.map((msg, idx) => (

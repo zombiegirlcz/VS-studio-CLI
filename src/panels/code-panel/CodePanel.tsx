@@ -2,6 +2,8 @@ import React, { useMemo } from 'react'
 import { useCanvasStore } from '@store'
 import { generateInkCode } from '@codegen'
 import QRExport from './QRExport'
+import JSONExport from './JSONExport'
+import { activateExplainMode } from '@ai/explainMode'
 
 const CodePanel: React.FC = () => {
   const nodes = useCanvasStore((state) => state.nodes)
@@ -78,6 +80,21 @@ const CodePanel: React.FC = () => {
         >
           Download
         </button>
+        <button
+          onClick={activateExplainMode}
+          style={{
+            flex: 1,
+            padding: '6px 12px',
+            backgroundColor: '#1f2937',
+            border: '1px solid #374151',
+            color: '#e5e7eb',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+          }}
+        >
+          Explain
+        </button>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -96,8 +113,13 @@ const CodePanel: React.FC = () => {
         </pre>
       </div>
 
-      <div style={{ borderTop: '1px solid #374151', backgroundColor: '#1f2937' }}>
-        <QRExport />
+      <div style={{ borderTop: '1px solid #374151', backgroundColor: '#1f2937', display: 'flex', gap: '4px', padding: '8px' }}>
+        <div style={{ flex: 1 }}>
+          <QRExport />
+        </div>
+        <div style={{ flex: 1 }}>
+          <JSONExport />
+        </div>
       </div>
     </div>
   )
